@@ -87,14 +87,12 @@ class ProductController {
     }
 
     async index(request, response){
-        const products = await Product.find({
-            include: [
-                {
-            model: Category,
-            as: 'Category',
-            attributes: ['id', 'name'],
-        }]
-
+        const products = await Product.findAll({
+            include:{
+                model:Category,
+                as:'category',
+                attributes:['id','name']
+            }
         })
 
         console.log({userId: request.userId})

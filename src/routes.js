@@ -12,10 +12,10 @@ import OrderController from './app/controllers/OrderController'
 const routes = new Router()
 const upload = multer(multerConfig)
 
-routes.post('/users', UserController.store)
-routes.post('/session', SessionController.store)
+routes.post('/users', UserController.store) // cadastro
+routes.post('/session', SessionController.store) // login
 
-routes.use(authMiddleware)
+routes.use(authMiddleware) // tudo que precisa de token (abaixo do middleware)
 
 routes.post('/products', upload.single('file'), ProductController.store)
 routes.get('/products', ProductController.index)
