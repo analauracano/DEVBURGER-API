@@ -1,13 +1,14 @@
 import { Router } from 'express'
 import multer from 'multer'
 import multerConfig from './config/multer'
-import { password } from './config/database'
+
 import UserController from './app/controllers/UserController'
 import SessionController from './app/controllers/SessionController'
 import ProductController from './app/controllers/ProductController'
 import CategoryController from './app/controllers/CategoryController'
 import authMiddleware from './app/middlewares/auth'
 import OrderController from './app/controllers/OrderController'
+import CreatePaymentIntentController from './app/controllers/stripe/CreatePaymentIntentController'
 
 const routes = new Router()
 const upload = multer(multerConfig)
@@ -29,5 +30,7 @@ routes.put('/categories/:id', upload.single('file'), CategoryController.update)
 routes.post('/orders', upload.single('file'), OrderController.store)
 routes.get('/orders', OrderController.index)
 routes.put('/orders/:id', OrderController.update)
+
+routes.post('/create-payment-intent', CreatePaymentIntentController.store)
 
 export default routes
