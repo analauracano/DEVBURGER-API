@@ -1,7 +1,7 @@
-import * as Yup from 'yup'
-import Product from '../models/Product'
-import Category from '../models/Category'
-import User from '../models/User'
+import * as Yup from 'yup';
+import Product from '../models/Product';
+import Category from '../models/Category';
+import User from '../models/User';
 
 class ProductController {
     async store(request, response) {
@@ -10,21 +10,21 @@ class ProductController {
             price: Yup.number().required(),
             category_id: Yup.number().required(),
             offer: Yup.boolean(),
-        })
+        });
 
         try {
-            schema.validateSync(request.body, { abortEarly: false })
+            schema.validateSync(request.body, { abortEarly: false });
         } catch (err) {
-            return response.status(400).json({ error: err.errors })
+            return response.status(400).json({ error: err.errors });
         }
 
-        const { admin: isAdmin } = await User.findByPk(request.userId)
-        if (!isAdmin){
-            return response.status(401).json()
+        const { admin: isAdmin } = await User.findByPk(request.userId);
+        if (!isAdmin) {
+            return response.status(401).json();
         }
 
-        const { filename:path } = request.file
-        const {name, price, category_id, offer} = request.body
+        const { filename: path } = request.file;
+        const { name, price, category_id, offer } = request.body;
 
         const product = await Product.create({
             name,
@@ -32,9 +32,9 @@ class ProductController {
             category_id,
             path,
             offer,
-        })
+        });
 
-        return response.status(201).json(product)
+        return response.status(201).json(product);
     }
 
     async update(request, response) {
@@ -43,62 +43,71 @@ class ProductController {
             price: Yup.number(),
             category_id: Yup.number(),
             offer: Yup.boolean(),
-        })
+        });
 
         try {
-            schema.validateSync(request.body, { abortEarly: false })
+            schema.validateSync(request.body, { abortEarly: false });
         } catch (err) {
-            return response.status(400).json({ error: err.errors })
+            return response.status(400).json({ error: err.errors });
         }
 
-        const { admin: isAdmin } = await User.findByPk(request.userId)
-        if (!isAdmin){
-            return response.status(401).json()
+        const { admin: isAdmin } = await User.findByPk(request.userId);
+        if (!isAdmin) {
+            return response.status(401).json();
         }
 
-        const {id} = request.params
+        const { id } = request.params;
 
-        const findProduct = await Product.findByPk(id)
+        const findProduct = await Product.findByPk(id);
 
-        if (!findProduct){
-            return response.status(400).json({error: 'Make sure your product ID is correct'})      
+        if (!findProduct) {
+            return response.status(400).json({ error: 'Make sure your product ID is correct' });
         }
 
         let path;
-        if (request.file){
-            path = request.file.filename
+        if (request.file) {
+            path = request.file.filename;
         }
 
-        const {name, price, category_id, offer} = request.body
+        const { name, price, category_id, offer } = request.body;
 
-        await Product.update({
-            name,
-            price,
-            category_id,
-            path,
-            offer,
-        },{
-            where:{
-                id,
+        const [affectedRows, updatedProducts] = await Product.update(
+            {
+                name,
+                price,
+                category_id,
+                path,
+                offer,
+            },
+            {
+                where: {
+                    id,
+                },
+                returning: true, // Adiciona returning: true para obter o produto atualizado
             }
-        })
+        );
 
-        return response.status(201).json(product)
+        if (affectedRows > 0 && updatedProducts && updatedProducts.length > 0) {
+            const product = updatedProducts[0]; // Captura o produto atualizado
+            return response.status(201).json(product);
+        } else {
+            return response.status(500).json({ error: 'Erro ao atualizar o produto' }); // Melhor tratamento de erro
+        }
     }
 
-    async index(request, response){
+    async index(request, response) {
         const products = await Product.findAll({
-            include:{
-                model:Category,
-                as:'category',
-                attributes:['id','name']
-            }
-        })
+            include: {
+                model: Category,
+                as: 'category',
+                attributes: ['id', 'name'],
+            },
+        });
 
-        console.log({userId: request.userId})
+        console.log({ userId: request.userId });
 
-        return response.json(products)
+        return response.json(products);
     }
 }
 
-export default new ProductController()
+export default new ProductController();
